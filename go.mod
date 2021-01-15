@@ -1,4 +1,4 @@
-module github.com/yndc/kvdb
+module github.com/yndc/kvrpc
 
 go 1.15
 
