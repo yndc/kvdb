@@ -5,33 +5,48 @@ option go_package = "github.com/yndc/kvrpc/server";
 package kvrpc;
 
 service KVRPC {
+  rpc Ping (Empty) returns (PingResponse);
   rpc Set (SetRequest) returns (SetResponse);
   rpc Get (GetRequest) returns (GetResponse);
   rpc Del (DelRequest) returns (DelResponse);
 }
 
 message SetRequest {
-  bytes key = 1;
-  bytes value = 2;
+  repeated KeyValue values = 1;
 }
 
 message SetResponse {
-  bool exist = 1;
+  repeated bool result = 1;
 }
 
 message GetRequest {
-  bytes key = 1;
+  repeated bytes keys = 1;
 }
 
 message GetResponse {
-  bool exist = 1;
-  bytes value = 2;
+  repeated ValueResult values = 1;
 }
 
 message DelRequest {
-  bytes key = 1;
+  repeated bytes key = 1;
 }
 
 message DelResponse {
-  bool exist = 1;
+  repeated bool exist = 1;
 }
+
+message KeyValue {
+  bytes key = 1;
+  bytes value = 2;
+}
+
+message ValueResult {
+  bytes value = 1;
+  bool exists = 2;
+}
+
+message PingResponse {
+  string response = 1;
+}
+
+message Empty {}
