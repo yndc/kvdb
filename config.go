@@ -7,8 +7,9 @@ import (
 )
 
 type config struct {
-	port int
-	path string
+	port     int
+	path     string
+	loglevel string
 }
 
 func loadConfig() *config {
@@ -20,8 +21,14 @@ func loadConfig() *config {
 	if path == nil {
 		log.Fatal().Msg("path is invalid")
 	}
+	loggingLevelStr := flag.String("l", "warn", "logging level (debug | info | warn | error)")
+	if loggingLevelStr == nil {
+		log.Fatal().Msg("loggingLevelStr is invalid")
+	}
+
 	return &config{
-		port: *port,
-		path: *path,
+		port:     *port,
+		path:     *path,
+		loglevel: *loggingLevelStr,
 	}
 }

@@ -8,16 +8,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// SayHello implements helloworld.GreeterServer
-// func (s *server) SayHello(ctx context.Context, in *service.HelloRequest) (*pb.HelloReply, error) {
-// 	log.Printf("Received: %v", in.GetName())
-// 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
-// }
-
-func setup() {
-
-}
-
 func main() {
 	config := loadConfig()
 
