@@ -15,7 +15,7 @@ type config struct {
 
 func loadConfig() *config {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	port := flag.Int("p", 9625, "port to listen for requests")
+	port := flag.Int("p", 9000, "port to listen for requests")
 	if port == nil {
 		log.Fatal().Msg("port is invalid")
 	}
