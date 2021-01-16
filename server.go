@@ -1,4 +1,4 @@
-package kvrpc
+package main
 
 import (
 	context "context"

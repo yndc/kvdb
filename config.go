@@ -1,8 +1,9 @@
-package kvrpc
+package main
 
 import (
 	"flag"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,6 +14,7 @@ type config struct {
 }
 
 func loadConfig() *config {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	port := flag.Int("p", 9625, "port to listen for requests")
 	if port == nil {
 		log.Fatal().Msg("port is invalid")

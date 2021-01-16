@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "github.com/yndc/kvrpc";
 
-package kvrpc;
+package main;
 
 service KVRPC {
   rpc Ping (Empty) returns (PingResponse);

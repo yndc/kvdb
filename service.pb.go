@@ -4,7 +4,7 @@
 // 	protoc        v3.14.0
 // source: service.proto
 
-package kvrpc
+package main
 
 import (
 	proto "github.com/golang/protobuf/proto"
