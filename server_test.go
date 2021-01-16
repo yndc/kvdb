@@ -84,7 +84,7 @@ func TestSetGet(t *testing.T) {
 	}
 }
 
-func TestConcurrency(t *testing.T) {
+func TestConcurrentOverlap(t *testing.T) {
 	// Make an array of sequential numbers with their MD5 hash as a result
 	size := 1000
 	salt := "noi*()SYDdhndcMNSKLjd098u"
@@ -208,9 +208,9 @@ func TestConcurrency(t *testing.T) {
 	}
 }
 
-func TestSimultaneous(t *testing.T) {
+func TestConcurrent(t *testing.T) {
 	// Make an array of sequential numbers with their MD5 hash as a result
-	size := 1000000
+	size := 100000
 	salt := "noi*()SYDdhndcMNSKLjd098u"
 
 	original := make([][]byte, size)
@@ -223,7 +223,7 @@ func TestSimultaneous(t *testing.T) {
 		original[i] = bytes[:]
 	}
 
-	fmt.Printf("created sample data for %d ms\n", sw().Milliseconds())
+	fmt.Printf("concurrent: created sample data for %d ms\n", sw().Milliseconds())
 
 	service := setup()
 	defer clean()
@@ -247,7 +247,7 @@ func TestSimultaneous(t *testing.T) {
 	}
 
 	writerWg.Wait()
-	fmt.Printf("writers done for %d ms\n", writerSw().Milliseconds())
+	fmt.Printf("concurrent: writers done for %d ms\n", writerSw().Milliseconds())
 
 	// run the readers
 	readerWg := sync.WaitGroup{}
@@ -256,6 +256,7 @@ func TestSimultaneous(t *testing.T) {
 	for i := range original {
 		capturedIndex := i
 		go func() {
+			defer readerWg.Done()
 			res, err := service.Get(context.Background(), &GetRequest{
 				Keys: [][]byte{[]byte(strconv.Itoa(capturedIndex))},
 			})
@@ -269,7 +270,70 @@ func TestSimultaneous(t *testing.T) {
 	}
 
 	readerWg.Wait()
-	fmt.Printf("readers done for %d ms\n", readerSw().Milliseconds())
+	fmt.Printf("concurrent: readers done for %d ms\n", readerSw().Milliseconds())
+
+	// validate the values
+	for i, v := range result {
+		if eq(v, original[i]) == false {
+			fmt.Printf("mismatch for %d\n", i)
+			t.Fail()
+		}
+	}
+}
+
+func TestBatched(t *testing.T) {
+	// Make an array of sequential numbers with their MD5 hash as a result
+	size := 100000
+	salt := "noi*()SYDdhndcMNSKLjd098u"
+
+	original := make([][]byte, size)
+	result := make([][]byte, size)
+
+	sw := stopwatch()
+
+	for i := range original {
+		bytes := md5.Sum([]byte(salt + strconv.Itoa(i)))
+		original[i] = bytes[:]
+	}
+
+	fmt.Printf("batched: created sample data for %d ms\n", sw().Milliseconds())
+
+	service := setup()
+	defer clean()
+	defer service.Close()
+
+	// run the writer
+	writerSw := stopwatch()
+	keyValues := make([]*KeyValue, size)
+	for i, v := range original {
+		keyValues[i] = &KeyValue{Key: []byte(strconv.Itoa(i)), Value: v}
+	}
+	_, err := service.Set(context.Background(), &SetRequest{
+		Values: keyValues,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Printf("batched: writers done for %d ms\n", writerSw().Milliseconds())
+
+	// run the reader
+	readerSw := stopwatch()
+	keys := make([][]byte, size)
+	for i := range original {
+		keys[i] = []byte(strconv.Itoa(i))
+	}
+	res, err := service.Get(context.Background(), &GetRequest{
+		Keys: keys,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	for i, v := range res.Values {
+		result[i] = v.Value
+	}
+
+	fmt.Printf("batched: readers done for %d ms\n", readerSw().Milliseconds())
 
 	// validate the values
 	for i, v := range result {
