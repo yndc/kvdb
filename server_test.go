@@ -9,6 +9,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/yndc/kvrpc/pb"
 )
 
 // func TestPing(t *testing.T) {
@@ -19,8 +21,8 @@ import (
 
 // 	service := NewService(config)
 
-// 	service.Set(context.Background(), &SetRequest{
-// 		Values: []*KeyValue{{
+// 	service.Set(context.Background(), &pb.SetRequest{
+// 		Values: []*pb.KeyValue{{
 // 			Key:   []byte("dsfdsf"),
 // 			Value: []byte("cdcc"),
 // 		}},
@@ -32,8 +34,8 @@ func TestSetGet(t *testing.T) {
 	defer clean()
 	defer service.Close()
 
-	setResponse, err := service.Set(context.Background(), &SetRequest{
-		Values: []*KeyValue{
+	setResponse, err := service.Set(context.Background(), &pb.SetRequest{
+		Values: []*pb.KeyValue{
 			{Key: []byte("one"), Value: []byte("aaa")},
 			{Key: []byte("two"), Value: []byte("bbb")},
 			{Key: []byte("three"), Value: []byte("ccc")},
@@ -53,7 +55,7 @@ func TestSetGet(t *testing.T) {
 		}
 	}
 
-	getResponse, err := service.Get(context.Background(), &GetRequest{
+	getResponse, err := service.Get(context.Background(), &pb.GetRequest{
 		Keys: [][]byte{
 			[]byte("3"),
 			[]byte("2"),
@@ -114,15 +116,15 @@ func TestConcurrentOverlap(t *testing.T) {
 		capturedIndex := i
 		go func() {
 			defer writerWg.Done()
-			kvs := make([]*KeyValue, 0)
-			kvs = append(kvs, &KeyValue{Key: []byte(strconv.Itoa(capturedIndex)), Value: original[capturedIndex]})
+			kvs := make([]*pb.KeyValue, 0)
+			kvs = append(kvs, &pb.KeyValue{Key: []byte(strconv.Itoa(capturedIndex)), Value: original[capturedIndex]})
 			if capturedIndex > 1 {
-				kvs = append(kvs, &KeyValue{Key: []byte(strconv.Itoa(capturedIndex - 1)), Value: original[capturedIndex-1]})
+				kvs = append(kvs, &pb.KeyValue{Key: []byte(strconv.Itoa(capturedIndex - 1)), Value: original[capturedIndex-1]})
 			}
 			if capturedIndex < len(original)-2 {
-				kvs = append(kvs, &KeyValue{Key: []byte(strconv.Itoa(capturedIndex + 1)), Value: original[capturedIndex+1]})
+				kvs = append(kvs, &pb.KeyValue{Key: []byte(strconv.Itoa(capturedIndex + 1)), Value: original[capturedIndex+1]})
 			}
-			_, err := service.Set(context.Background(), &SetRequest{
+			_, err := service.Set(context.Background(), &pb.SetRequest{
 				Values: kvs,
 			})
 			if err != nil {
@@ -160,7 +162,7 @@ func TestConcurrentOverlap(t *testing.T) {
 					break
 				}
 
-				res, err := service.Get(context.Background(), &GetRequest{Keys: keys})
+				res, err := service.Get(context.Background(), &pb.GetRequest{Keys: keys})
 				if err != nil {
 					t.Error(err)
 				}
@@ -237,8 +239,8 @@ func TestConcurrent(t *testing.T) {
 		capturedIndex := i
 		go func() {
 			defer writerWg.Done()
-			_, err := service.Set(context.Background(), &SetRequest{
-				Values: []*KeyValue{{Key: []byte(strconv.Itoa(capturedIndex)), Value: original[capturedIndex]}},
+			_, err := service.Set(context.Background(), &pb.SetRequest{
+				Values: []*pb.KeyValue{{Key: []byte(strconv.Itoa(capturedIndex)), Value: original[capturedIndex]}},
 			})
 			if err != nil {
 				t.Error(err)
@@ -257,7 +259,7 @@ func TestConcurrent(t *testing.T) {
 		capturedIndex := i
 		go func() {
 			defer readerWg.Done()
-			res, err := service.Get(context.Background(), &GetRequest{
+			res, err := service.Get(context.Background(), &pb.GetRequest{
 				Keys: [][]byte{[]byte(strconv.Itoa(capturedIndex))},
 			})
 			if err != nil {
@@ -304,11 +306,11 @@ func TestBatched(t *testing.T) {
 
 	// run the writer
 	writerSw := stopwatch()
-	keyValues := make([]*KeyValue, size)
+	keyValues := make([]*pb.KeyValue, size)
 	for i, v := range original {
-		keyValues[i] = &KeyValue{Key: []byte(strconv.Itoa(i)), Value: v}
+		keyValues[i] = &pb.KeyValue{Key: []byte(strconv.Itoa(i)), Value: v}
 	}
-	_, err := service.Set(context.Background(), &SetRequest{
+	_, err := service.Set(context.Background(), &pb.SetRequest{
 		Values: keyValues,
 	})
 	if err != nil {
@@ -323,7 +325,7 @@ func TestBatched(t *testing.T) {
 	for i := range original {
 		keys[i] = []byte(strconv.Itoa(i))
 	}
-	res, err := service.Get(context.Background(), &GetRequest{
+	res, err := service.Get(context.Background(), &pb.GetRequest{
 		Keys: keys,
 	})
 	if err != nil {

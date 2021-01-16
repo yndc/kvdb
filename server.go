@@ -6,11 +6,12 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/yndc/kvrpc/pb"
 )
 
 // Service is gRPC service for KVRPC
 type Service struct {
-	UnimplementedKVRPCServer
+	pb.UnimplementedKVRPCServer
 	db *badger.DB
 }
 
@@ -71,7 +72,7 @@ func (s *Service) Close() {
 }
 
 // Set writes the given key-value data into the disk
-func (s *Service) Set(ctx context.Context, in *SetRequest) (*SetResponse, error) {
+func (s *Service) Set(ctx context.Context, in *pb.SetRequest) (*pb.SetResponse, error) {
 	results := make([]bool, len(in.Values))
 
 	err := s.db.Update(func(txn *badger.Txn) error {
@@ -90,17 +91,17 @@ func (s *Service) Set(ctx context.Context, in *SetRequest) (*SetResponse, error)
 		return nil, err
 	}
 
-	return &SetResponse{
+	return &pb.SetResponse{
 		Result: results,
 	}, nil
 }
 
 // Get retrieves the data specified by the given keys
-func (s *Service) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
-	results := make([]*ValueResult, len(in.Keys))
+func (s *Service) Get(ctx context.Context, in *pb.GetRequest) (*pb.GetResponse, error) {
+	results := make([]*pb.ValueResult, len(in.Keys))
 	err := s.db.View(func(txn *badger.Txn) error {
 		for i, k := range in.Keys {
-			results[i] = &ValueResult{}
+			results[i] = &pb.ValueResult{}
 			item, err := txn.Get(k)
 			if err != nil {
 				if err == badger.ErrKeyNotFound {
@@ -128,13 +129,13 @@ func (s *Service) Get(ctx context.Context, in *GetRequest) (*GetResponse, error)
 		return nil, err
 	}
 
-	return &GetResponse{
+	return &pb.GetResponse{
 		Values: results,
 	}, nil
 }
 
 // Del deletes the data with the given keys
-func (s *Service) Del(ctx context.Context, in *DelRequest) (*Empty, error) {
+func (s *Service) Del(ctx context.Context, in *pb.DelRequest) (*pb.Empty, error) {
 
 	err := s.db.Update(func(txn *badger.Txn) error {
 		keys := in.GetKeys()
@@ -151,5 +152,5 @@ func (s *Service) Del(ctx context.Context, in *DelRequest) (*Empty, error) {
 		return nil, err
 	}
 
-	return &Empty{}, nil
+	return &pb.Empty{}, nil
 }

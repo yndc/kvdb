@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 
+	"github.com/yndc/kvrpc/pb"
 	"google.golang.org/grpc"
 )
 
 // Client is the wrapped GRPC client
-type Client = KVRPCClient
+type Client = pb.KVRPCClient
 
 // ClientOptions is the options to be given into the KVRPC client
 type ClientOptions struct {
@@ -23,6 +24,6 @@ func NewClient(opt ClientOptions) (*Client, error) {
 	}
 	defer conn.Close()
 
-	client := NewKVRPCClient(conn)
+	client := pb.NewKVRPCClient(conn)
 	return &client, nil
 }

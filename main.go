@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/rs/zerolog/log"
+	"github.com/yndc/kvrpc/pb"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +22,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	kvrpcService := NewService(config)
-	RegisterKVRPCServer(grpcServer, kvrpcService)
+	pb.RegisterKVRPCServer(grpcServer, kvrpcService)
 
 	signalChan := make(chan os.Signal, 1)
 	fatalChan := make(chan error, 1)
