@@ -17,7 +17,7 @@ COPY kvrpc ./kvrpc
 COPY pb ./pb
 
 # Build the app
-RUN CGO_ENABLED=0 go build -ldflags '-w -extldflags "-static"' -o ./kvrpc .
+RUN CGO_ENABLED=0 go build -ldflags '-w -extldflags "-static"' -o ./build/kvrpc .
 
 #--------------------------------
 # Stage 2 - Deployment container
@@ -25,7 +25,7 @@ RUN CGO_ENABLED=0 go build -ldflags '-w -extldflags "-static"' -o ./kvrpc .
 FROM scratch
 
 # Copy the compiled app
-COPY --from=builder /app/kvrpc /kvrpc
+COPY --from=builder /app/build/kvrpc /kvrpc
 
 EXPOSE 9000
 
