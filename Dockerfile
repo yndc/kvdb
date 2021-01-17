@@ -13,6 +13,8 @@ RUN go mod download
 
 # Copy the code
 COPY *.go ./
+COPY kvrpc ./kvrpc
+COPY pb ./pb
 
 # Build the app
 RUN CGO_ENABLED=0 go build -ldflags '-w -extldflags "-static"' -o ./kvrpc .
