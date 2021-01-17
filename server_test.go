@@ -13,22 +13,6 @@ import (
 	"github.com/yndc/kvrpc/pb"
 )
 
-// func TestPing(t *testing.T) {
-// 	config := &config{
-// 		port: 3000,
-// 		path: "./temp",
-// 	}
-
-// 	service := NewService(config)
-
-// 	service.Set(context.Background(), &pb.SetRequest{
-// 		Values: []*pb.KeyValue{{
-// 			Key:   []byte("dsfdsf"),
-// 			Value: []byte("cdcc"),
-// 		}},
-// 	})
-// }
-
 func TestSetGet(t *testing.T) {
 	service := setup()
 	defer clean()
