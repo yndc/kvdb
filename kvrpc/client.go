@@ -14,24 +14,46 @@ type Client struct {
 	client pb.KVRPCClient
 }
 
+// KeyValue is a pair of key and value
+type KeyValue = pb.KeyValue
+
+// ValueResult is a pair of a value and it's existence
+type ValueResult = pb.ValueResult
+
 // Ping checks the connection
-func (c *Client) Ping(ctx context.Context, in *pb.Empty, opts ...grpc.CallOption) (*pb.PingResponse, error) {
-	return c.client.Ping(ctx, in, opts...)
+func (c *Client) Ping(ctx context.Context, opts ...grpc.CallOption) error {
+	_, err := c.client.Ping(ctx, &pb.Empty{}, opts...)
+	return err
 }
 
 // Set a value into the KV store
-func (c *Client) Set(ctx context.Context, in *pb.SetRequest, opts ...grpc.CallOption) (*pb.SetResponse, error) {
-	return c.client.Set(ctx, in, opts...)
+func (c *Client) Set(ctx context.Context, values []*KeyValue, opts ...grpc.CallOption) ([]bool, error) {
+	res, err := c.client.Set(ctx, &pb.SetRequest{
+		Values: values,
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return res.Result, nil
 }
 
 // Get values from the KV store
-func (c *Client) Get(ctx context.Context, in *pb.GetRequest, opts ...grpc.CallOption) (*pb.GetResponse, error) {
-	return c.client.Get(ctx, in, opts...)
+func (c *Client) Get(ctx context.Context, keys [][]byte, opts ...grpc.CallOption) ([]*ValueResult, error) {
+	res, err := c.client.Get(ctx, &pb.GetRequest{
+		Keys: keys,
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return res.Values, nil
 }
 
 // Del deletes values from the KV store
-func (c *Client) Del(ctx context.Context, in *pb.DelRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-	return c.client.Del(ctx, in, opts...)
+func (c *Client) Del(ctx context.Context, keys [][]byte, opts ...grpc.CallOption) error {
+	_, err := c.client.Del(ctx, &pb.DelRequest{
+		Keys: keys,
+	}, opts...)
+	return err
 }
 
 // Close the connection
