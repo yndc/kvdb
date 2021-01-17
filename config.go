@@ -19,7 +19,7 @@ func loadConfig() *config {
 	if port == nil {
 		log.Fatal().Msg("port is invalid")
 	}
-	path := flag.String("d", "./db", "the directory path used for the database")
+	path := flag.String("d", "./data", "the directory path used for the database")
 	if path == nil {
 		log.Fatal().Msg("path is invalid")
 	}
