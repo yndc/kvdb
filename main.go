@@ -20,7 +20,7 @@ func main() {
 		log.Fatal().Err(err).Msgf("failed to create listener")
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(1_000_000_000))
 	kvrpcService := NewService(config)
 	pb.RegisterKVRPCServer(grpcServer, kvrpcService)
 
